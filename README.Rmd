@@ -54,9 +54,6 @@ if (grepl('gfm', output_format)) {
 }
 ```
 
-
-
-
 ## Introducción
 
 En este ejercicio, calcularemos el valor de la variable \( z \) en un punto de coordenadas \( x_i, y_i \), conocido el valor de la variable en otros puntos utilizando la **Interpolación Lineal Ponderada por la Distancia Inversa** (IDW, por sus siglas en inglés). Este método se basa en la idea de que los puntos más cercanos tienen una mayor influencia en la estimación del valor en un punto dado que los puntos más alejados.
@@ -109,14 +106,44 @@ x_P <- 2; y_P <- 2
 z_A <- 10
 z_B <- 20
 z_C <- 15
+z_P <- NA
+```
 
+Gráfico.
+
+```{r}
+library(tidyverse)
+library(plotly)
+datos <- data.frame(
+  x = c(x_A, x_B, x_C, x_P),
+  y = c(y_A, y_B, y_C, y_P),
+  z = c(z_A, z_B, z_C, z_P))
+grafico_puntos <- datos %>%
+  ggplot +
+  aes(x = x, y = y, fill = z) +
+  geom_point(shape = 21, color = 'transparent', size = 4) +
+  geom_text(
+    label = paste0(
+      c("A", "B", "C", "P"),
+      '\n\nz = ',
+      ifelse(is.na(datos$z), '¿?', datos$z))) +
+  coord_cartesian(xlim = c(0, 5), ylim = c(0, 5)) +
+  scale_fill_viridis_c() +
+  theme_minimal()
+ggplotly(grafico_puntos)
+```
+
+Distancias.
+
+```{r, results='asis'}
 # Distancias euclidianas
 d_PA <- sqrt((x_P - x_A)^2 + (y_P - y_A)^2)
 d_PB <- sqrt((x_P - x_B)^2 + (y_P - y_B)^2)
 d_PC <- sqrt((x_P - x_C)^2 + (y_P - y_C)^2)
 
-d_PA; d_PB; d_PC
-
+cat('Distancia entre A y P:', round(d_PA, 2))
+cat('Distancia entre B y P:', round(d_PB, 2))
+cat('Distancia entre C y P:', round(d_PC, 2))
 
 # Parámetro de ponderación
 p <- 2
@@ -125,12 +152,12 @@ p <- 2
 z_P <- (z_A / d_PA^p + z_B / d_PB^p + z_C / d_PC^p) /
        (1 / d_PA^p + 1 / d_PB^p + 1 / d_PC^p)
 
-z_P
+cat('Valor interpolado de z en P:', round(z_P, 2))
 ```
 
 ## Tu turno
 
-Mandato: estima, por medio de interpolación lineal ponderada por la distancia inversa, el valor de la variable \( Z \) en el punto \( P \) de coordenadas \( X, Y ) \)
+Mandato: estima, por medio de interpolación lineal ponderada por la distancia inversa, el valor de la variable \( Z \) en el punto \( P \) de coordenadas \( ( X, Y ) \)
 
 
 ```{r, results='asis', echo=T}
@@ -201,13 +228,13 @@ idw_interpolation <- function(x_coords, y_coords, z_values, x_p, y_p, p = 2) {
   
   z_p <- numerator / denominator
   
-  return(list(distances= distances, z_p=z_p))
+  return(list(distances = distances, z_p = z_p))
 }
 ```
 
 Aplicar la función para calcular el valor interpolado en P para todos los estudiantes
 
-```{r}
+```{r, results='asis'}
 solucion <- sapply(1:20, function(estudiante) idw_interpolation(
     x_coords = tables_df[[estudiante]][1:3,]$X,
     y_coords = tables_df[[estudiante]][1:3,]$Y,
@@ -216,5 +243,27 @@ solucion <- sapply(1:20, function(estudiante) idw_interpolation(
     y_p = tables_df[[estudiante]][4,]$Y,
     p = 2), simplify = F)
 names(solucion) <- paste0('Estudiante ', 1:20)
-solucion
 ```
+
+Imprimir soluciones.
+
+```{r, results='asis'}
+imprimir_con_cat <- function(desde, valor) {
+  cat('Distancia entre', desde, 'y P:', round(valor, 2), '\n')
+}
+invisible(sapply(
+  solucion,
+  function(estudiante) {
+    imprimir_con_cat('A', estudiante$distances[1])
+    imprimir_con_cat('B', estudiante$distances[2])
+    imprimir_con_cat('C', estudiante$distances[3])
+    cat('Valor interpolado de z en P:', round(estudiante$z_p, 2), '\n\n')
+    cat('\n\n')
+  }
+))
+```
+
+
+<!-- cat('Distancia entre A y P:', round(d_PA, 2)) -->
+<!-- cat('Distancia entre B y P:', round(d_PB, 2)) -->
+<!-- cat('Distancia entre C y P:', round(d_PC, 2)) -->

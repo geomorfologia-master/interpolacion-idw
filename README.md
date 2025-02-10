@@ -1,7 +1,7 @@
 Interpolación lineal ponderada por la distancia inversa
 ================
 Geomorfología (GEO-114).
-2024-08-20
+2025-02-10
 
 Versión HTML (quizá más legible),
 [aquí](https://geomorfologia-master.github.io/interpolacion-idw/README.html)
@@ -69,20 +69,59 @@ x_P <- 2; y_P <- 2
 z_A <- 10
 z_B <- 20
 z_C <- 15
+z_P <- NA
+```
 
+Gráfico.
+
+``` r
+library(tidyverse)
+library(plotly)
+datos <- data.frame(
+  x = c(x_A, x_B, x_C, x_P),
+  y = c(y_A, y_B, y_C, y_P),
+  z = c(z_A, z_B, z_C, z_P))
+grafico_puntos <- datos %>%
+  ggplot +
+  aes(x = x, y = y, fill = z) +
+  geom_point(shape = 21, color = 'transparent', size = 4) +
+  geom_text(
+    label = paste0(
+      c("A", "B", "C", "P"),
+      '\n\nz = ',
+      ifelse(is.na(datos$z), '¿?', datos$z))) +
+  coord_cartesian(xlim = c(0, 5), ylim = c(0, 5)) +
+  scale_fill_viridis_c() +
+  theme_minimal()
+ggplotly(grafico_puntos)
+```
+
+![](README_files/figure-gfm/unnamed-chunk-4-1.png)<!-- -->
+
+Distancias.
+
+``` r
 # Distancias euclidianas
 d_PA <- sqrt((x_P - x_A)^2 + (y_P - y_A)^2)
 d_PB <- sqrt((x_P - x_B)^2 + (y_P - y_B)^2)
 d_PC <- sqrt((x_P - x_C)^2 + (y_P - y_C)^2)
 
-d_PA; d_PB; d_PC
+cat('Distancia entre A y P:', round(d_PA, 2))
 ```
 
-    ## [1] 1.414214
+Distancia entre A y P: 1.41
 
-    ## [1] 2.236068
+``` r
+cat('Distancia entre B y P:', round(d_PB, 2))
+```
 
-    ## [1] 2
+Distancia entre B y P: 2.24
+
+``` r
+cat('Distancia entre C y P:', round(d_PC, 2))
+```
+
+Distancia entre C y P: 2
 
 ``` r
 # Parámetro de ponderación
@@ -92,16 +131,16 @@ p <- 2
 z_P <- (z_A / d_PA^p + z_B / d_PB^p + z_C / d_PC^p) /
        (1 / d_PA^p + 1 / d_PB^p + 1 / d_PC^p)
 
-z_P
+cat('Valor interpolado de z en P:', round(z_P, 2))
 ```
 
-    ## [1] 13.42105
+Valor interpolado de z en P: 13.42
 
 ## Tu turno
 
 Mandato: estima, por medio de interpolación lineal ponderada por la
 distancia inversa, el valor de la variable $Z$ en el punto $P$ de
-coordenadas $X, Y )$
+coordenadas $( X, Y )$
 
 ``` r
 # Cargar las librerías necesarias
@@ -351,7 +390,7 @@ idw_interpolation <- function(x_coords, y_coords, z_values, x_p, y_p, p = 2) {
   
   z_p <- numerator / denominator
   
-  return(list(distances= distances, z_p=z_p))
+  return(list(distances = distances, z_p = z_p))
 }
 ```
 
@@ -367,164 +406,86 @@ solucion <- sapply(1:20, function(estudiante) idw_interpolation(
     y_p = tables_df[[estudiante]][4,]$Y,
     p = 2), simplify = F)
 names(solucion) <- paste0('Estudiante ', 1:20)
-solucion
 ```
 
-    ## $`Estudiante 1`
-    ## $`Estudiante 1`$distances
-    ## [1] 7.000000 7.615773 6.082763
-    ## 
-    ## $`Estudiante 1`$z_p
-    ## [1] 48.91575
-    ## 
-    ## 
-    ## $`Estudiante 2`
-    ## $`Estudiante 2`$distances
-    ## [1] 6.082763 8.062258 2.828427
-    ## 
-    ## $`Estudiante 2`$z_p
-    ## [1] 20.70972
-    ## 
-    ## 
-    ## $`Estudiante 3`
-    ## $`Estudiante 3`$distances
-    ## [1] 5 2 6
-    ## 
-    ## $`Estudiante 3`$z_p
-    ## [1] 74.38811
-    ## 
-    ## 
-    ## $`Estudiante 4`
-    ## $`Estudiante 4`$distances
-    ## [1] 3.162278 5.656854 7.071068
-    ## 
-    ## $`Estudiante 4`$z_p
-    ## [1] 73.98347
-    ## 
-    ## 
-    ## $`Estudiante 5`
-    ## $`Estudiante 5`$distances
-    ## [1] 5.099020 6.708204 2.236068
-    ## 
-    ## $`Estudiante 5`$z_p
-    ## [1] 39.66885
-    ## 
-    ## 
-    ## $`Estudiante 6`
-    ## $`Estudiante 6`$distances
-    ## [1] 3.162278 5.099020 4.000000
-    ## 
-    ## $`Estudiante 6`$z_p
-    ## [1] 41.63158
-    ## 
-    ## 
-    ## $`Estudiante 7`
-    ## $`Estudiante 7`$distances
-    ## [1] 5.830952 1.000000 4.123106
-    ## 
-    ## $`Estudiante 7`$z_p
-    ## [1] 91.51351
-    ## 
-    ## 
-    ## $`Estudiante 8`
-    ## $`Estudiante 8`$distances
-    ## [1] 6.403124 3.162278 2.236068
-    ## 
-    ## $`Estudiante 8`$z_p
-    ## [1] 63.95489
-    ## 
-    ## 
-    ## $`Estudiante 9`
-    ## $`Estudiante 9`$distances
-    ## [1] 9.848858 1.000000 8.062258
-    ## 
-    ## $`Estudiante 9`$z_p
-    ## [1] 92.34962
-    ## 
-    ## 
-    ## $`Estudiante 10`
-    ## $`Estudiante 10`$distances
-    ## [1] 8.062258 2.236068 9.055385
-    ## 
-    ## $`Estudiante 10`$z_p
-    ## [1] 25.26628
-    ## 
-    ## 
-    ## $`Estudiante 11`
-    ## $`Estudiante 11`$distances
-    ## [1] 3.162278 2.828427 2.236068
-    ## 
-    ## $`Estudiante 11`$z_p
-    ## [1] 34.88235
-    ## 
-    ## 
-    ## $`Estudiante 12`
-    ## $`Estudiante 12`$distances
-    ## [1] 1.414214 2.000000 6.324555
-    ## 
-    ## $`Estudiante 12`$z_p
-    ## [1] 39.25806
-    ## 
-    ## 
-    ## $`Estudiante 13`
-    ## $`Estudiante 13`$distances
-    ## [1] 3.605551 4.123106 4.472136
-    ## 
-    ## $`Estudiante 13`$z_p
-    ## [1] 74.61267
-    ## 
-    ## 
-    ## $`Estudiante 14`
-    ## $`Estudiante 14`$distances
-    ## [1] 6.403124 1.414214 1.000000
-    ## 
-    ## $`Estudiante 14`$z_p
-    ## [1] 52.976
-    ## 
-    ## 
-    ## $`Estudiante 15`
-    ## $`Estudiante 15`$distances
-    ## [1] 3.605551 6.082763 5.830952
-    ## 
-    ## $`Estudiante 15`$z_p
-    ## [1] 78.17377
-    ## 
-    ## 
-    ## $`Estudiante 16`
-    ## $`Estudiante 16`$distances
-    ## [1] 4.000000 6.324555 5.099020
-    ## 
-    ## $`Estudiante 16`$z_p
-    ## [1] 60.79389
-    ## 
-    ## 
-    ## $`Estudiante 17`
-    ## $`Estudiante 17`$distances
-    ## [1] 3.605551 8.062258 5.099020
-    ## 
-    ## $`Estudiante 17`$z_p
-    ## [1] 37.88235
-    ## 
-    ## 
-    ## $`Estudiante 18`
-    ## $`Estudiante 18`$distances
-    ## [1] 8.000000 1.000000 5.656854
-    ## 
-    ## $`Estudiante 18`$z_p
-    ## [1] 20.56716
-    ## 
-    ## 
-    ## $`Estudiante 19`
-    ## $`Estudiante 19`$distances
-    ## [1] 5.385165 2.236068 8.000000
-    ## 
-    ## $`Estudiante 19`$z_p
-    ## [1] 62.44981
-    ## 
-    ## 
-    ## $`Estudiante 20`
-    ## $`Estudiante 20`$distances
-    ## [1] 6.324555 3.162278 5.385165
-    ## 
-    ## $`Estudiante 20`$z_p
-    ## [1] 45.5027
+Imprimir soluciones.
+
+``` r
+imprimir_con_cat <- function(desde, valor) {
+  cat('Distancia entre', desde, 'y P:', round(valor, 2), '\n')
+}
+invisible(sapply(
+  solucion,
+  function(estudiante) {
+    imprimir_con_cat('A', estudiante$distances[1])
+    imprimir_con_cat('B', estudiante$distances[2])
+    imprimir_con_cat('C', estudiante$distances[3])
+    cat('Valor interpolado de z en P:', round(estudiante$z_p, 2), '\n\n')
+    cat('\n\n')
+  }
+))
+```
+
+Distancia entre A y P: 7 Distancia entre B y P: 7.62 Distancia entre C y
+P: 6.08 Valor interpolado de z en P: 48.92
+
+Distancia entre A y P: 6.08 Distancia entre B y P: 8.06 Distancia entre
+C y P: 2.83 Valor interpolado de z en P: 20.71
+
+Distancia entre A y P: 5 Distancia entre B y P: 2 Distancia entre C y P:
+6 Valor interpolado de z en P: 74.39
+
+Distancia entre A y P: 3.16 Distancia entre B y P: 5.66 Distancia entre
+C y P: 7.07 Valor interpolado de z en P: 73.98
+
+Distancia entre A y P: 5.1 Distancia entre B y P: 6.71 Distancia entre C
+y P: 2.24 Valor interpolado de z en P: 39.67
+
+Distancia entre A y P: 3.16 Distancia entre B y P: 5.1 Distancia entre C
+y P: 4 Valor interpolado de z en P: 41.63
+
+Distancia entre A y P: 5.83 Distancia entre B y P: 1 Distancia entre C y
+P: 4.12 Valor interpolado de z en P: 91.51
+
+Distancia entre A y P: 6.4 Distancia entre B y P: 3.16 Distancia entre C
+y P: 2.24 Valor interpolado de z en P: 63.95
+
+Distancia entre A y P: 9.85 Distancia entre B y P: 1 Distancia entre C y
+P: 8.06 Valor interpolado de z en P: 92.35
+
+Distancia entre A y P: 8.06 Distancia entre B y P: 2.24 Distancia entre
+C y P: 9.06 Valor interpolado de z en P: 25.27
+
+Distancia entre A y P: 3.16 Distancia entre B y P: 2.83 Distancia entre
+C y P: 2.24 Valor interpolado de z en P: 34.88
+
+Distancia entre A y P: 1.41 Distancia entre B y P: 2 Distancia entre C y
+P: 6.32 Valor interpolado de z en P: 39.26
+
+Distancia entre A y P: 3.61 Distancia entre B y P: 4.12 Distancia entre
+C y P: 4.47 Valor interpolado de z en P: 74.61
+
+Distancia entre A y P: 6.4 Distancia entre B y P: 1.41 Distancia entre C
+y P: 1 Valor interpolado de z en P: 52.98
+
+Distancia entre A y P: 3.61 Distancia entre B y P: 6.08 Distancia entre
+C y P: 5.83 Valor interpolado de z en P: 78.17
+
+Distancia entre A y P: 4 Distancia entre B y P: 6.32 Distancia entre C y
+P: 5.1 Valor interpolado de z en P: 60.79
+
+Distancia entre A y P: 3.61 Distancia entre B y P: 8.06 Distancia entre
+C y P: 5.1 Valor interpolado de z en P: 37.88
+
+Distancia entre A y P: 8 Distancia entre B y P: 1 Distancia entre C y P:
+5.66 Valor interpolado de z en P: 20.57
+
+Distancia entre A y P: 5.39 Distancia entre B y P: 2.24 Distancia entre
+C y P: 8 Valor interpolado de z en P: 62.45
+
+Distancia entre A y P: 6.32 Distancia entre B y P: 3.16 Distancia entre
+C y P: 5.39 Valor interpolado de z en P: 45.5
+
+<!-- cat('Distancia entre A y P:', round(d_PA, 2)) -->
+<!-- cat('Distancia entre B y P:', round(d_PB, 2)) -->
+<!-- cat('Distancia entre C y P:', round(d_PC, 2)) -->
